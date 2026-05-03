@@ -95,7 +95,9 @@ NB: This project is still under development. You might encounter bugs with the p
 <img src="docs/screenshot3.png" width="900">
 <img src="docs/screenshot4.png" width="900">
 <img src="docs/screenshot5.png" width="900">
-
+    
+## Maintainer
+- [@Bernard Katamanso](https://github.com/adjanour)
 
 ## Contributors
 - [@Aaron Ontonyin](https://github.com/Aaron-Ontoyin)
