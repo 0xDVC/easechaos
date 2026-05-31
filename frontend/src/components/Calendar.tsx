@@ -13,10 +13,7 @@ import clsx from "clsx";
 import { WeekSchedule } from "../types";
 import "react-day-picker/dist/style.css";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  downloadElementAsImage,
-  downloadElementAsPDF,
-} from "../utils/downloadUtils";
+import { downloadElementAsImage, downloadElementAsPDF } from "../utils/downloadUtils";
 import ThemeToggle from "./ThemeToggle";
 
 type ViewMode = "day" | "week";
@@ -46,9 +43,7 @@ export default function Calendar() {
     const cachedVersion = localStorage.getItem(versionKey);
 
     if (cachedData) {
-      validateAndUpdateCache(dept, year, cachedData, cachedVersion).catch(
-        console.error,
-      );
+      validateAndUpdateCache(dept, year, cachedData, cachedVersion).catch(console.error);
       return JSON.parse(cachedData);
     }
 
@@ -81,7 +76,7 @@ export default function Calendar() {
             Expires: "0",
           },
           body: JSON.stringify({
-            filename: "Draft_2",
+            filename: "Draft_3",
             class_pattern: `${dept} ${year}`,
           }),
         },
@@ -107,18 +102,15 @@ export default function Calendar() {
   };
 
   const fetchFresh = async (dept: string, year: string) => {
-    const response = await fetch(
-      import.meta.env.VITE_API_URL + "/get_time_table",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          filename: "Draft_2",
-          class_pattern: `${dept} ${year}`,
-          is_exam: false,
-        }),
-      },
-    );
+    const response = await fetch(import.meta.env.VITE_API_URL + "/get_time_table", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        filename: "Draft_2",
+        class_pattern: `${dept} ${year}`,
+        is_exam: false,
+      }),
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch schedule");
@@ -152,10 +144,7 @@ export default function Calendar() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        datePickerRef.current &&
-        !datePickerRef.current.contains(event.target as Node)
-      ) {
+      if (datePickerRef.current && !datePickerRef.current.contains(event.target as Node)) {
         setShowDatePicker(false);
       }
       if (
@@ -213,9 +202,7 @@ export default function Calendar() {
 
     const checkForUpdates = () => {
       const cachedData = localStorage.getItem(`schedule:${dept}:${year}`);
-      const cachedVersion = localStorage.getItem(
-        `schedule:${dept}:${year}:version`,
-      );
+      const cachedVersion = localStorage.getItem(`schedule:${dept}:${year}:version`);
 
       if (cachedData) {
         validateAndUpdateCache(dept, year, cachedData, cachedVersion);
@@ -258,16 +245,11 @@ export default function Calendar() {
         }
 
         const { data, version } = await response.json();
-        const currentVersion = localStorage.getItem(
-          `schedule:${dept}:${year}:version`,
-        );
+        const currentVersion = localStorage.getItem(`schedule:${dept}:${year}:version`);
 
         if (version !== currentVersion) {
           console.log("New version detected, updating...");
-          localStorage.setItem(
-            `schedule:${dept}:${year}`,
-            JSON.stringify(data),
-          );
+          localStorage.setItem(`schedule:${dept}:${year}`, JSON.stringify(data));
           localStorage.setItem(`schedule:${dept}:${year}:version`, version);
           setSchedule(data);
         }
@@ -303,11 +285,7 @@ export default function Calendar() {
   }, [dept, year]);
 
   if (error) {
-    return (
-      <div className="flex items-center justify-center h-screen text-red-500">
-        {error}
-      </div>
-    );
+    return <div className="flex items-center justify-center h-screen text-red-500">{error}</div>;
   }
 
   const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
@@ -382,8 +360,7 @@ export default function Calendar() {
                   <h1 className="text-2xl font-bold dark:text-[#F0F6FC]">
                     {viewMode === "week"
                       ? "Week's Schedule"
-                      : format(selectedDate, "yyyy-MM-dd") ===
-                          format(new Date(), "yyyy-MM-dd")
+                      : format(selectedDate, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd")
                         ? "Today"
                         : format(selectedDate, "EEEE")}
                   </h1>
@@ -412,8 +389,7 @@ export default function Calendar() {
                             }
                           }}
                           modifiers={{
-                            disabled: (date) =>
-                              date.getDay() === 0 || date.getDay() === 6,
+                            disabled: (date) => date.getDay() === 0 || date.getDay() === 6,
                           }}
                           showOutsideDays
                           className="p-3"
@@ -432,13 +408,9 @@ export default function Calendar() {
                   <div className="relative z-[9999]">
                     <div
                       className="flex items-center gap-2"
-                      onClick={() =>
-                        setShowDownloadDropdown(!showDownloadDropdown)
-                      }
+                      onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
                     >
-                      <span className="text-sm font-medium dark:text-[#B2B2B2]">
-                        Download
-                      </span>
+                      <span className="text-sm font-medium dark:text-[#B2B2B2]">Download</span>
                       <button className="p-1 rounded-full border-2 border-gray-600 flex items-center dark:border-[#B2B2B2] dark:text-[#B2B2B2]">
                         <svg
                           className="w-2 h-2"
@@ -465,31 +437,21 @@ export default function Calendar() {
                       >
                         <button
                           onClick={() => {
-                            downloadElementAsPDF(
-                              "week-schedule",
-                              "Schedule.pdf",
-                            );
+                            downloadElementAsPDF("week-schedule", "Schedule.pdf");
                             setShowDownloadDropdown(false);
                           }}
                           className="w-full px-4 py-1 text-left hover:bg-gray-100 dark:hover:bg-[#3e3e3e] border-b border-gray-200 dark:border-[#303030]"
                         >
-                          <span className="text-sm dark:text-[#B2B2B2]">
-                            PDF
-                          </span>
+                          <span className="text-sm dark:text-[#B2B2B2]">PDF</span>
                         </button>
                         <button
                           onClick={() => {
-                            downloadElementAsImage(
-                              "week-schedule",
-                              "Schedule.png",
-                            );
+                            downloadElementAsImage("week-schedule", "Schedule.png");
                             setShowDownloadDropdown(false);
                           }}
                           className="w-full px-4 py-1 text-left hover:bg-gray-100 dark:hover:bg-[#3e3e3e]"
                         >
-                          <span className="text-sm dark:text-[#B2B2B2]">
-                            Image
-                          </span>
+                          <span className="text-sm dark:text-[#B2B2B2]">Image</span>
                         </button>
                       </div>
                     )}
@@ -553,11 +515,7 @@ export default function Calendar() {
 
           <div className="flex-1 overflow-auto px-2 md:px-4 z-0">
             <Suspense
-              fallback={
-                <div className="flex items-center justify-center p-8">
-                  Loading...
-                </div>
-              }
+              fallback={<div className="flex items-center justify-center p-8">Loading...</div>}
             >
               {viewMode === "week" ? (
                 <WeekView schedule={scheduleData} />
