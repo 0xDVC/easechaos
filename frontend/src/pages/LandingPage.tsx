@@ -316,13 +316,20 @@ export default function LandingPage() {
               href="https://github.com/aaron-ontoyin"
             >
               Ontoyin Aaron Yin
-            </a>{" "}
-            and{" "}
+            </a>
+            ,{" "}
             <a
               className="underline underline-offset-4"
               href="https://github.com/db-keli"
             >
               Dompeh Kofi Bright
+            </a>
+            , and{" "}
+            <a
+              className="underline underline-offset-4"
+              href="https://github.com/adjanour"
+            >
+              Adjarnor
             </a>
             . Get the source code from{" "}
             <a
