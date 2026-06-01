@@ -21,14 +21,17 @@ class Settings(BaseSettings):
     PORT: int = 80
     CORS_ORIGINS: str = "*"
 
+
 settings = Settings()
 
 
-def _get_latest_draft() -> Path:
-    xlsx_files = list(DRAFTS_FOLDER.glob("*.xlsx"))
-    if not xlsx_files:
+def _get_latest_draft(is_exam: bool = False) -> Path:
+    files = list(DRAFTS_FOLDER.glob("*_ex.xlsx" if is_exam else "*.xlsx"))
+    if not is_exam:
+        files = [f for f in files if "_ex" not in f.stem]
+    if not files:
         raise FileNotFoundError(f"No draft files found in {DRAFTS_FOLDER}")
-    return max(xlsx_files, key=lambda f: f.stat().st_mtime)
+    return max(files, key=lambda f: f.stat().st_mtime)
 
 
 def _current_file_hash() -> str:
@@ -73,7 +76,11 @@ def get_table_from_cache(class_pattern: str, is_exam: bool) -> str | None:
         cached_hash = r.get(hash_key)
         cached_data = r.get(cache_key)
 
-        if isinstance(cached_hash, str) and isinstance(cached_data, str) and cached_hash == current_hash:
+        if (
+            isinstance(cached_hash, str)
+            and isinstance(cached_data, str)
+            and cached_hash == current_hash
+        ):
             return cached_data
         return None
 
@@ -85,7 +92,9 @@ def get_table_from_cache(class_pattern: str, is_exam: bool) -> str | None:
         return None
 
 
-def add_table_to_cache(table: str, class_pattern: str, is_exam: bool, expire_seconds: int = 3600):
+def add_table_to_cache(
+    table: str, class_pattern: str, is_exam: bool, expire_seconds: int = 3600
+):
     try:
         current_hash = _current_file_hash()
 

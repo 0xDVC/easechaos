@@ -22,7 +22,7 @@ class TimeTableRequest(BaseModel):
 
 
 def get_json_table(request: TimeTableRequest):
-    file_path = _get_latest_draft()
+    file_path = _get_latest_draft(request.is_exam)
     content = file_path.read_bytes()
 
     table = get_table_from_cache(request.class_pattern, request.is_exam)
@@ -153,7 +153,9 @@ def get_time_table_endpoint(request: TimeTableRequest):
     Raises:
         FileNotFoundError: If Excel file doesn't exist
     """
-    content_hash = hashlib.md5(_get_latest_draft().read_bytes()).hexdigest()
+    content_hash = hashlib.md5(
+        _get_latest_draft(request.is_exam).read_bytes()
+    ).hexdigest()
 
     # Get processed JSON data
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
