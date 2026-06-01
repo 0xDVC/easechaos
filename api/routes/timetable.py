@@ -1,67 +1,36 @@
-import os
+import hashlib
+import json
 import logging
+import os
+
 from fastapi import APIRouter
 from pydantic import BaseModel
-from api.extract.extract_lectures_table import get_time_table
-from api.extract.extract_exam_table import get_exam_timetable
-import json
-from pathlib import Path
-import hashlib
 
 from api.config.redis_config import (
-    get_table_from_cache,
+    _get_latest_draft,
     add_table_to_cache,
+    get_table_from_cache,
 )
-
-current_script_path = Path(__file__)
-project_root_path = current_script_path.parents[1]
-DRAFTS_FOLDER = project_root_path / "drafts"
+from api.extract.extract_exam_table import get_exam_timetable
+from api.extract.extract_lectures_table import get_time_table
 
 router = APIRouter()
 
 
 class TimeTableRequest(BaseModel):
-    """
-    Represents a request for a timetable (lecture or exam).
-    """
-
-    filename: str
     class_pattern: str
     is_exam: bool = False
 
 
 def get_json_table(request: TimeTableRequest):
-    """
-    Get the timetable in JSON format (either lecture or exam) with caching.
+    full_path = str(_get_latest_draft())
 
-    This function implements a caching strategy to improve performance:
-    1. Check Redis cache first using filename, class pattern, and exam flag as key
-    2. If cache miss, process Excel file and store result in cache
-    3. Return parsed JSON data for API response
-
-    Args:
-        request: TimeTableRequest containing filename, class_pattern, and is_exam flag
-
-    Returns:
-        Parsed JSON data from Excel file or cache
-
-    Raises:
-        FileNotFoundError: If Excel file doesn't exist in drafts folder
-    """
-    # Normalize filename once here to ensure consistency
-    base_filename = request.filename.replace(".xlsx", "")  # Strip any .xlsx
-    filename = f"{base_filename}.xlsx"  # Add it back once
-
-    # Check cache first for performance
-    table = get_table_from_cache(base_filename, request.class_pattern, request.is_exam)
+    table = get_table_from_cache(request.class_pattern, request.is_exam)
 
     if table is None:
-        # Cache miss - process Excel file
-        full_path = os.path.join(DRAFTS_FOLDER, filename)
         if not os.path.exists(full_path):
             raise FileNotFoundError(f"Timetable file not found: {full_path}")
 
-        # Process based on timetable type
         if request.is_exam:
             table = get_exam_timetable(full_path, request.class_pattern).to_json(
                 orient="records"
@@ -70,10 +39,10 @@ def get_json_table(request: TimeTableRequest):
             table = get_time_table(full_path, request.class_pattern).to_json(
                 orient="records"
             )
+        assert table is not None
+        add_table_to_cache(table, request.class_pattern, request.is_exam)
 
-        # Store in cache for future requests
-        add_table_to_cache(table, base_filename, request.class_pattern, request.is_exam)
-
+    assert table is not None
     return json.loads(table)
 
 
@@ -168,7 +137,7 @@ def exams_convert_to_24hour(time_str: str, previous_was_pm: bool = False) -> str
 
 
 @router.post("/get_time_table")
-async def get_time_table_endpoint(request: TimeTableRequest):
+def get_time_table_endpoint(request: TimeTableRequest):
     """
     Main endpoint for generating parsed JSON timetable (lecture or exam).
 
@@ -187,20 +156,9 @@ async def get_time_table_endpoint(request: TimeTableRequest):
     Raises:
         FileNotFoundError: If Excel file doesn't exist
     """
-    # Normalize filename for consistency
-    base_filename = request.filename.replace(".xlsx", "")
-    filename = f"{base_filename}.xlsx"
+    file_path = str(_get_latest_draft())
 
-    # Pre-check cache to trigger file processing if needed
-    _ = get_table_from_cache(base_filename, request.class_pattern, request.is_exam)
-
-    # Generate content hash for version tracking and change detection
-    file_path = os.path.join(DRAFTS_FOLDER, filename)
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"Timetable file not found: {file_path}")
-
-    with open(file_path, "rb") as f:
-        content_hash = hashlib.md5(f.read()).hexdigest()
+    content_hash = hashlib.md5(open(file_path, "rb").read()).hexdigest()
 
     # Get processed JSON data
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
