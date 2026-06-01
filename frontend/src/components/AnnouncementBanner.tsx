@@ -18,21 +18,21 @@ const variantIcons: Record<string, JSX.Element> = {
   info: (
     <svg width="16" height="16" viewBox="0 0 24 24" strokeWidth="1.5" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-5" aria-label="Info">
       <title>Info</title>
-      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-blue-700" fill="none" />
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-current" fill="none" />
     </svg>
   ),
   success: (
     <svg width="16" height="16" viewBox="0 0 24 24" strokeWidth="1.5" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-5" aria-label="Success">
       <title>Success</title>
-      <path d="M8 15C12.8747 15 15 12.949 15 8C15 12.949 17.1104 15 22 15C17.1104 15 15 17.1104 15 22C15 17.1104 12.8747 15 8 15Z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-green-700" />
-      <path d="M2 6.5C5.13376 6.5 6.5 5.18153 6.5 2C6.5 5.18153 7.85669 6.5 11 6.5C7.85669 6.5 6.5 7.85669 6.5 11C6.5 7.85669 5.13376 6.5 2 6.5Z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-green-700" />
+      <path d="M8 15C12.8747 15 15 12.949 15 8C15 12.949 17.1104 15 22 15C17.1104 15 15 17.1104 15 22C15 17.1104 12.8747 15 8 15Z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-current" />
+      <path d="M2 6.5C5.13376 6.5 6.5 5.18153 6.5 2C6.5 5.18153 7.85669 6.5 11 6.5C7.85669 6.5 6.5 7.85669 6.5 11C6.5 7.85669 5.13376 6.5 2 6.5Z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-current" />
     </svg>
   ),
   warning: (
     <svg width="16" height="16" viewBox="0 0 24 24" strokeWidth="1.5" fill="none" xmlns="http://www.w3.org/2000/svg" className="size-5" aria-label="Warning">
       <title>Warning</title>
-      <path d="M12 7v6M12 17h0" strokeWidth="2" strokeLinecap="round" className="stroke-yellow-700" />
-      <path d="M12 2L2 22h20L12 2z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-yellow-700" fill="none" />
+      <path d="M12 7v6M12 17h0" strokeWidth="2" strokeLinecap="round" className="stroke-current" />
+      <path d="M12 2L2 22h20L12 2z" strokeWidth="1.5" strokeLinejoin="round" className="stroke-current" fill="none" />
     </svg>
   ),
 };
