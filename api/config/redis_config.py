@@ -1,24 +1,39 @@
 import redis
 from dotenv import load_dotenv
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 import logging
-import os
+from pathlib import Path
 import hashlib
 
 load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-class Settings(BaseSettings):
-    REDIS_HOST: str
-    REDIS_PORT: int
-    REDIS_PASSWORD: str
-    PORT: int = 80
+DRAFTS_FOLDER = Path(__file__).resolve().parents[1] / "drafts"
 
-    class Config:
-        env_file = ".env"
+
+class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    REDIS_HOST: str = ""
+    REDIS_PORT: int = 6379
+    REDIS_PASSWORD: str = ""
+    PORT: int = 80
+    CORS_ORIGINS: str = "*"
 
 settings = Settings()
+
+
+def _get_latest_draft() -> Path:
+    xlsx_files = list(DRAFTS_FOLDER.glob("*.xlsx"))
+    if not xlsx_files:
+        raise FileNotFoundError(f"No draft files found in {DRAFTS_FOLDER}")
+    return max(xlsx_files, key=lambda f: f.stat().st_mtime)
+
+
+def _current_file_hash() -> str:
+    return hashlib.md5(_get_latest_draft().read_bytes()).hexdigest()
+
 
 def get_redis_connection():
     try:
@@ -31,7 +46,6 @@ def get_redis_connection():
             ssl=False,
             decode_responses=True,
             socket_timeout=5,
-            retry_on_timeout=True,
         )
 
     except redis.ConnectionError as e:
@@ -41,30 +55,25 @@ def get_redis_connection():
         logger.error(f"Unexpected error connecting to Redis: {e}")
         raise
 
+
 r = get_redis_connection()
 
-def create_cache_key_from_parameters(filename: str, class_pattern: str, is_exam: bool) -> str:
-    """Generate a consistent cache key including the timetable type."""
-    return f"{filename}-{class_pattern.replace(' ', '')}-{'exam' if is_exam else 'lecture'}"
 
-def get_table_from_cache(filename: str, class_pattern: str, is_exam: bool) -> str | None:
-    """
-    Get a timetable (lecture or exam) from the cache.
-    """
+def create_cache_key_from_parameters(class_pattern: str, is_exam: bool) -> str:
+    return f"{class_pattern.replace(' ', '')}-{'exam' if is_exam else 'lecture'}"
+
+
+def get_table_from_cache(class_pattern: str, is_exam: bool) -> str | None:
     try:
-        # Normalize filename to match what’s used elsewhere
-        base_filename = filename.replace(".xlsx", "")
-        file_path = os.path.join("api/drafts", f"{base_filename}.xlsx")
-        with open(file_path, "rb") as f:
-            current_hash = hashlib.md5(f.read()).hexdigest()
+        current_hash = _current_file_hash()
 
-        cache_key = create_cache_key_from_parameters(base_filename, class_pattern, is_exam)
+        cache_key = create_cache_key_from_parameters(class_pattern, is_exam)
         hash_key = f"{cache_key}_hash"
 
         cached_hash = r.get(hash_key)
         cached_data = r.get(cache_key)
 
-        if cached_hash and cached_data and cached_hash == current_hash:
+        if isinstance(cached_hash, str) and isinstance(cached_data, str) and cached_hash == current_hash:
             return cached_data
         return None
 
@@ -75,17 +84,12 @@ def get_table_from_cache(filename: str, class_pattern: str, is_exam: bool) -> st
         logger.error(f"File not found for cache check: {e}")
         return None
 
-def add_table_to_cache(table: str, filename: str, class_pattern: str, is_exam: bool, expire_seconds: int = 3600):
-    """
-    Add a timetable (lecture or exam) to the cache.
-    """
-    try:
-        base_filename = filename.replace(".xlsx", "")
-        file_path = os.path.join("api/drafts", f"{base_filename}.xlsx")
-        with open(file_path, "rb") as f:
-            current_hash = hashlib.md5(f.read()).hexdigest()
 
-        cache_key = create_cache_key_from_parameters(base_filename, class_pattern, is_exam)
+def add_table_to_cache(table: str, class_pattern: str, is_exam: bool, expire_seconds: int = 3600):
+    try:
+        current_hash = _current_file_hash()
+
+        cache_key = create_cache_key_from_parameters(class_pattern, is_exam)
         hash_key = f"{cache_key}_hash"
 
         pipe = r.pipeline()

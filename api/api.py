@@ -1,14 +1,17 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes.timetable import router as timetable_router
+from api.config.redis_config import settings
 
 app = FastAPI()
+
+origins = [o.strip() for o in settings.CORS_ORIGINS.split(",")]
 
 app_router = APIRouter(prefix="/api/v1")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # For production, replace with specific origins
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
