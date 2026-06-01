@@ -1,0 +1,37 @@
+<svg width="1080" height="1920" viewBox="0 0 1080 1920" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#02040A"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#8B5CF6"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1080" height="1920" fill="url(#bgGrad)"/>
+  <circle cx="900" cy="300" r="600" fill="#3B82F6" opacity="0.06"/>
+  <circle cx="200" cy="1600" r="500" fill="#8B5CF6" opacity="0.04"/>
+
+  <rect x="390" y="200" width="300" height="300" rx="72" fill="url(#accentGrad)"/>
+  <text x="540" y="400" text-anchor="middle" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="180" font-weight="800">e</text>
+
+  <text x="540" y="680" text-anchor="middle" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="120" font-weight="900" letter-spacing="-1.5">
+    <tspan x="540" dy="0">Timetable,</tspan>
+    <tspan x="540" dy="130" fill="#60A5FA">Simplified.</tspan>
+  </text>
+
+  <text x="540" y="900" text-anchor="middle" fill="#94A3B8" font-family="Inter, Arial, sans-serif" font-size="40" font-weight="500">
+    UMaT lectures &amp; exams in a clean, mobile-friendly view.
+  </text>
+
+  <rect x="240" y="1060" width="600" height="100" rx="50" fill="url(#accentGrad)"/>
+  <text x="540" y="1130" text-anchor="middle" fill="#FFFFFF" font-family="Inter, Arial, sans-serif" font-size="38" font-weight="700">easechaos.xyz</text>
+
+  <rect x="290" y="1240" width="500" height="500" rx="40" fill="#FFFFFF"/>
+  <rect x="310" y="1260" width="460" height="460" rx="30" fill="#F8FAFC"/>
+  <image x="400" y="1350" width="280" height="280" href="easechaos-qr.png"/>
+
+  <text x="540" y="1850" text-anchor="middle" fill="#475569" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="500">University of Mines and Technology</text>
+</svg>
