@@ -32,7 +32,6 @@ const fetchExamTimetable = async (dept: string, year: string) => {
         "Cache-Control": "no-cache, no-store, must-revalidate",
       },
       body: JSON.stringify({
-        filename: "Draft_1_ex",
         class_pattern: `${dept} ${year}`,
         is_exam: true,
       }),
