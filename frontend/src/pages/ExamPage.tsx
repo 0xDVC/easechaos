@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, CalendarDays, Layers3 } from "lucide-react";
 import ExamView from "../components/ExamView";
+import SEO from "../components/SEO";
+import { useAnalytics } from "../hooks/useAnalytics";
 import ThemeToggle from "../components/ThemeToggle";
 import { TimetableData } from "../types";
 import { departments, years } from "../constants/departments";
@@ -49,6 +51,7 @@ export default function ExamPage() {
   const { dept, year } = useParams();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const analytics = useAnalytics();
   const [error, setError] = useState<string | null>(null);
   const [examData, setExamData] = useState<TimetableData | null>(null);
 
@@ -65,6 +68,7 @@ export default function ExamPage() {
       try {
         const data = await fetchExamTimetable(dept, year);
         setExamData(data);
+        analytics.trackExamView(dept, year);
       } catch (err) {
         setError((err as Error).message || "Failed to load exam timetable");
       } finally {
@@ -136,6 +140,12 @@ export default function ExamPage() {
 
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#FAFAFA] dark:bg-[#02040A]">
+      <SEO
+        title={`${dept} ${year} Exam Schedule`}
+        description={`View the examination schedule for ${dept} ${year} at UMaT. ${totalDisplayedPapers} papers across ${uniqueExamDays.length} days.`}
+        ogTitle={`${dept} ${year} · Exam Schedule`}
+        ogDescription={`Examination schedule for ${dept} ${year} at UMaT — ${totalDisplayedPapers} papers.`}
+      />
       <div className="relative h-full w-full overflow-x-hidden px-3 py-3 sm:px-4 lg:px-6 xl:px-8">
         <div className="z-20 border-b bg-[#FAFAFA] px-2 py-4 dark:border-[#303030] dark:bg-[#02040A] sm:sticky sm:top-0 lg:px-0">
           <div className="flex flex-col gap-4">

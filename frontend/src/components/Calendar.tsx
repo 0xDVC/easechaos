@@ -14,6 +14,8 @@ import { WeekSchedule } from "../types";
 import "react-day-picker/dist/style.css";
 import { useParams, useNavigate } from "react-router-dom";
 import { downloadElementAsImage, downloadElementAsPDF } from "../utils/downloadUtils";
+import SEO from "./SEO";
+import { useAnalytics } from "../hooks/useAnalytics";
 import ThemeToggle from "./ThemeToggle";
 
 type ViewMode = "day" | "week";
@@ -34,6 +36,7 @@ export default function Calendar() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const navigate = useNavigate();
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const analytics = useAnalytics();
 
   const fetchSchedule = async (dept: string, year: string) => {
     const cacheKey = `schedule:${dept}:${year}`;
@@ -327,6 +330,12 @@ export default function Calendar() {
 
   return (
     <div className="bg-gray-50 dark:bg-[#02040A] h-screen">
+      <SEO
+        title={`${dept} ${year} Timetable`}
+        description={`View the academic timetable for ${dept} ${year} at UMaT. Weekly and daily schedule views.`}
+        ogTitle={`${dept} ${year} · Timetable`}
+        ogDescription={`Academic timetable for ${dept} ${year} at UMaT.`}
+      />
       <div
         className={clsx(
           "h-full w-full relative",
@@ -434,6 +443,7 @@ export default function Calendar() {
                       >
                         <button
                           onClick={() => {
+                            analytics.trackDownloadPDF("timetable");
                             downloadElementAsPDF("week-schedule", "Schedule.pdf");
                             setShowDownloadDropdown(false);
                           }}
@@ -443,6 +453,7 @@ export default function Calendar() {
                         </button>
                         <button
                           onClick={() => {
+                            analytics.trackDownloadImage("timetable");
                             downloadElementAsImage("week-schedule", "Schedule.png");
                             setShowDownloadDropdown(false);
                           }}

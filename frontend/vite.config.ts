@@ -9,7 +9,10 @@ const pwa = {
   manifest: {
     name: 'EaseCHAOS',
     short_name: 'EaseCHAOS',
-    description: 'UMaT Timetable Viewer',
+    description: 'UMaT Timetable & Exam Schedule Viewer',
+    start_url: '/',
+    display: 'standalone',
+    background_color: '#FAFAFA',
     theme_color: '#000000',
     icons: [
       {
@@ -20,7 +23,8 @@ const pwa = {
       {
         src: 'assets/easechaos.png',
         sizes: '512x512',
-        type: 'image/png'
+        type: 'image/png',
+        purpose: 'any maskable'
       }
     ]
   },
@@ -28,7 +32,7 @@ const pwa = {
     cacheId: 'easechaos-v1',
     runtimeCaching: [
       {
-        urlPattern: /^https:\/\/easechaos\.onrender\.com\/.*$/,
+        urlPattern: /^https:\/\/easechaos\.(xyz|adjarnor\.live)\/.*$/,
         handler: 'NetworkFirst',
         options: {
           cacheName: 'api-cache',

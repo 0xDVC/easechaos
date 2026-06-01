@@ -5,9 +5,12 @@ import {
   Navigate,
   useLocation,
 } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import LandingPage from "./pages/LandingPage";
 import ExamPage from "./pages/ExamPage";
 import Calendar from "./components/Calendar";
+import AnnouncementBanner from "./components/AnnouncementBanner";
+import SEO from "./components/SEO";
 import { Analytics } from "@vercel/analytics/react";
 import { useEffect, useState } from "react";
 
@@ -48,12 +51,15 @@ function AppContent() {
 }
 
 function App() {
-  console.log("It is running");
   return (
-    <Router>
-      <Analytics />
-      <AppContent />
-    </Router>
+    <HelmetProvider>
+      <Router>
+        <Analytics />
+        <SEO />
+        <AnnouncementBanner />
+        <AppContent />
+      </Router>
+    </HelmetProvider>
   );
 }
 

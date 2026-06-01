@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   departments,
@@ -8,35 +8,26 @@ import {
 } from "../constants/departments";
 import easeChaosLogo from "../../assets/easechaos.png";
 import ThemeToggle from "../components/ThemeToggle";
+import SEO from "../components/SEO";
+import { useAnalytics } from "../hooks/useAnalytics";
 import clsx from "clsx";
 
 export default function LandingPage() {
   const [selectedDept, setSelectedDept] = useState<Department | "">("");
   const [selectedYear, setSelectedYear] = useState<Year | "">("");
   const navigate = useNavigate();
-  const [showNotification, setShowNotification] = useState(false);
-  const [fadeOut, setFadeOut] = useState(false);
-
-  useEffect(() => {
-    setShowNotification(true);
-    const timer = setTimeout(() => {
-      setFadeOut(true);
-      const hideTimer = setTimeout(() => {
-        setShowNotification(false);
-      }, 500);
-      return () => clearTimeout(hideTimer);
-    }, 5000);
-    return () => clearTimeout(timer);
-  }, []);
+  const analytics = useAnalytics();
 
   const handleViewSchedule = () => {
     if (selectedDept && selectedYear) {
+      analytics.trackTimetableView(selectedDept, String(selectedYear.id));
       navigate(`/timetable/${selectedDept}/${selectedYear.id}`);
     }
   };
 
   const handleViewExamSchedule = () => {
     if (selectedDept && selectedYear) {
+      analytics.trackExamView(selectedDept, String(selectedYear.id));
       navigate(`/exam/${selectedDept}/${selectedYear.id}`);
     }
   };
@@ -46,41 +37,10 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#02040A] flex flex-col items-center justify-center p-4 md:p-6 mx-auto overflow-hidden relative">
+      <SEO
+        ogUrl="https://easechaos.xyz"
+      />
       <div className="absolute top-0 w-full h-[60vh] dark:h-[70vh] bg-[url('../assets/light_pattern.svg')] dark:bg-[url('../assets/dark_pattern.svg')] bg-cover bg-center dark:opacity-15 opacity-65" />
-
-      {showNotification && (
-        <div
-          className={`absolute top-6 flex items-center px-3 py-2 bg-green-400 border-2 border-green-700 rounded-full z-10 ${
-            fadeOut ? "animate-fade-out" : "animate-slide-in"
-          }`}
-        >
-          <svg
-            width="16px"
-            height="16px"
-            viewBox="0 0 24 24"
-            strokeWidth="1.5"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="relative size-5"
-          >
-            <path
-              d="M8 15C12.8747 15 15 12.949 15 8C15 12.949 17.1104 15 22 15C17.1104 15 15 17.1104 15 22C15 17.1104 12.8747 15 8 15Z"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-              className="stroke-green-700"
-            ></path>
-            <path
-              d="M2 6.5C5.13376 6.5 6.5 5.18153 6.5 2C6.5 5.18153 7.85669 6.5 11 6.5C7.85669 6.5 6.5 7.85669 6.5 11C6.5 7.85669 5.13376 6.5 2 6.5Z"
-              strokeWidth="1.5"
-              strokeLinejoin="round"
-              className="stroke-green-700"
-            ></path>
-          </svg>
-          <span className="text-sm text-green-900">
-            Available now: Examination schedule view
-          </span>
-        </div>
-      )}
       <div className="relative max-w-4xl w-full text-center space-y-6">
         {/* Hero Section */}
         <div className="space-y-6 text-center">
