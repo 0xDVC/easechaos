@@ -5,7 +5,9 @@ from datetime import datetime, timedelta
 import openpyxl
 
 
-def _get_time_row(df: pd.DataFrame) -> pd.Series:
+from collections.abc import Hashable
+
+def _get_time_row(df: pd.DataFrame) -> tuple[Hashable, pd.Series] | None:
     """
     Get the time row from the dataframe.
 
@@ -29,13 +31,17 @@ def _get_daily_table(df: pd.DataFrame, class_pattern: str) -> pd.DataFrame:
     df = df.copy()
 
     time_row = _get_time_row(df)
+    if time_row is None:
+        return df
     new_cols = time_row[1].to_list()
     new_cols.pop(0)
     new_cols.insert(0, "Classroom")
     df.columns = new_cols
 
     df.set_index("Classroom", inplace=True)
-    df = df.iloc[time_row[0] + 1 :]
+    idx = time_row[0]
+    assert isinstance(idx, int)
+    df = df.iloc[idx + 1 :]
 
     dept, year = class_pattern.split()
 
@@ -93,8 +99,8 @@ def _get_all_daily_tables(filename: str, class_pattern: str) -> dict:
             if mc.max_col - mc.min_col == 1:
                 merged_value = workbook[sheet].cell(mc.min_row, mc.min_col).value
                 workbook[sheet].unmerge_cells(mc.coord)
-                workbook[sheet].cell(mc.min_row, mc.min_col).value = merged_value
-                workbook[sheet].cell(mc.max_row, mc.max_col).value = merged_value
+                workbook[sheet].cell(mc.min_row, mc.min_col).value = merged_value  # type: ignore[assignment]
+                workbook[sheet].cell(mc.max_row, mc.max_col).value = merged_value  # type: ignore[assignment]
 
         data = workbook[sheet].values
         header = next(data)
