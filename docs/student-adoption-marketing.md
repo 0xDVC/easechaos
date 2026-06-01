@@ -207,48 +207,19 @@ Example:
 
 > Timetable Excel sheets are stressful to use on mobile. Use easeCHAOS to check your UMaT class and exam schedule faster. Open the link, choose your department and year, and you are in.
 
-## Poster Copy
+## Poster Assets
 
-Editable poster assets in this repo:
+Ready-to-use PNG assets in this repo:
 
-- `docs/assets/umat-student-poster.svg`
+- `docs/assets/umat-student-poster.png` — A4 print poster (2480×3508)
+- `docs/assets/umat-social-square.png` — 1:1 social media post
+- `docs/assets/umat-social-square-dark.png` — 1:1 dark variant
+- `docs/assets/umat-social-story.png` — 9:16 story/post for WhatsApp, Instagram
+- `docs/assets/umat-carousel-1.png` — "Still zooming into Excel sheets?"
+- `docs/assets/umat-carousel-2.png` — "Pick your class. See your schedule."
+- `docs/assets/umat-carousel-3.png` — "Share this with your class group."
 
-### Poster Version A (Recommended)
-
-Headline:
-
-> Timetable, Simplified.
-
-Subheadline:
-
-> View your lectures and exam schedule in a clean, mobile-friendly format.
-
-Feature bullets:
-
-> - Select your department and year instantly
-> - View weekly lecture or daily agenda view
-> - Check exam schedule, dates, and papers
-> - Export as PDF, image, or add to calendar
-
-Call to action:
-
-> Scan to open easeCHAOS
-
-Footer:
-
-> easechaos.xyz &middot; Share this link with your class group.
-
-### Social Graphics
-
-- `docs/assets/umat-social-square.svg` — 1:1 social media post
-- `docs/assets/umat-social-square-dark.svg` — 1:1 dark variant
-- `docs/assets/umat-social-story.svg` — 9:16 story/post for WhatsApp, Instagram
-
-### Carousel (3 slides)
-
-- `docs/assets/umat-carousel-1.svg` — "Tired of Zooming Into Timetables?"
-- `docs/assets/umat-carousel-2.svg` — "Pick Your Class, See Your Week."
-- `docs/assets/umat-carousel-3.svg` — "Share With Your Class."
+All assets use the easeCHAOS logo, Manrope font, and a clean white background. Copy is intentionally minimal — one thought per asset.
 
 ## WhatsApp Copy
 
