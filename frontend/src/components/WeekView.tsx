@@ -241,7 +241,7 @@ export default function WeekView({ schedule }: WeekViewProps) {
                             index === 0 && "border-l-0",
                             index === timeSlots.length - 1 && "border-r",
                             index % 2 !== 0
-                              ? "bg-gray-100 dark:bg-inherit"
+                              ? "bg-gray-100 dark:bg-[#222]"
                               : "bg-gray-200 dark:bg-[#303030]",
                           )}
                         />

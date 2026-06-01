@@ -232,7 +232,7 @@ export default function DayView({ schedule }: DayViewProps) {
                 className={clsx(
                   "absolute w-full border-t border-gray-200 dark:border-[#303030]",
                   index % 2 !== 0
-                    ? "bg-gray-100 dark:bg-inherit"
+                    ? "bg-gray-100 dark:bg-[#222]"
                     : "bg-gray-200 dark:bg-[#303030]",
                 )}
                 style={{

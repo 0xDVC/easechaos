@@ -412,12 +412,13 @@ export default function Calendar() {
                 </div>
                 {viewMode === "week" && (
                   <div className="relative z-[9999]">
-                    <div
-                      className="flex items-center gap-2"
+                    <button
                       onClick={() => setShowDownloadDropdown(!showDownloadDropdown)}
+                      className="flex items-center gap-2"
+                      aria-label="Download schedule"
                     >
                       <span className="text-sm font-medium dark:text-[#B2B2B2]">Download</span>
-                      <button className="p-1 rounded-full border-2 border-gray-600 flex items-center dark:border-[#B2B2B2] dark:text-[#B2B2B2]">
+                      <span className="p-1 rounded-full border-2 border-gray-600 flex items-center dark:border-[#B2B2B2] dark:text-[#B2B2B2]">
                         <svg
                           className="w-2 h-2"
                           data-slot="icon"
@@ -434,8 +435,8 @@ export default function Calendar() {
                             d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"
                           ></path>
                         </svg>
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                     {showDownloadDropdown && (
                       <div
                         ref={downloadDropdownRef}

@@ -11,6 +11,13 @@ import ThemeToggle from "../components/ThemeToggle";
 import SEO from "../components/SEO";
 import { useAnalytics } from "../hooks/useAnalytics";
 import clsx from "clsx";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function LandingPage() {
   const [selectedDept, setSelectedDept] = useState<Department | "">("");
@@ -31,9 +38,6 @@ export default function LandingPage() {
       navigate(`/exam/${selectedDept}/${selectedYear.id}`);
     }
   };
-
-  const selectClass =
-    "w-full appearance-none rounded-md border bg-[#F4F4F5] dark:bg-[#262626] px-4 py-3 text-sm text-gray-900 dark:text-[#D4D4D8] border-gray-300 dark:border-[#303030] focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:outline-none";
 
   return (
     <div className="min-h-screen bg-[#FAFAFA] dark:bg-[#02040A] flex flex-col items-center justify-center p-4 md:p-6 mx-auto overflow-hidden relative">
@@ -99,69 +103,41 @@ export default function LandingPage() {
         <div className="relative w-full">
           <div className="relative z-10 shadow-sm bg-white dark:bg-[#09090B] border border-[#E4E4E7] dark:border-[#303030] rounded-lg p-4 space-y-4 max-w-sm mx-auto">
             <div className="space-y-4">
-              <div className="relative group">
-                <select
-                  value={selectedDept}
-                  onChange={(e) =>
-                    setSelectedDept(e.target.value as Department)
-                  }
-                  className={selectClass}
-                >
-                  <option value="" disabled>
-                    Select Department
-                  </option>
+              <Select
+                value={selectedDept}
+                onValueChange={(value) => setSelectedDept(value as Department)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Department" />
+                </SelectTrigger>
+                <SelectContent>
                   {departments.map((dept) => (
-                    <option key={dept.id} value={dept.id}>
+                    <SelectItem key={dept.id} value={dept.id}>
                       {dept.name}
-                    </option>
+                    </SelectItem>
                   ))}
-                </select>
+                </SelectContent>
+              </Select>
 
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 group-focus-within:text-blue-500">
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="-6.5 0 32 32"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M18.813 11.406l-7.906 9.906c-0.75 0.906-1.906 0.906-2.625 0l-7.906-9.906c-0.75-0.938-0.375-1.656 0.781-1.656h16.875c1.188 0 1.531 0.719 0.781 1.656z" />
-                  </svg>
-                </span>
-              </div>
-
-              <div className="relative group">
-                <select
-                  value={selectedYear ? selectedYear.name : ""}
-                  onChange={(e) =>
-                    setSelectedYear(
-                      years.find((y) => y.name === e.target.value) || "",
-                    )
-                  }
-                  className={selectClass}
-                >
-                  <option value="" disabled>
-                    Select Year
-                  </option>
+              <Select
+                value={selectedYear ? selectedYear.name : ""}
+                onValueChange={(value) =>
+                  setSelectedYear(
+                    years.find((y) => y.name === value) || "",
+                  )
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Year" />
+                </SelectTrigger>
+                <SelectContent>
                   {years.map((year) => (
-                    <option key={year.id} value={year.name}>
+                    <SelectItem key={year.id} value={year.name}>
                       {year.name}
-                    </option>
+                    </SelectItem>
                   ))}
-                </select>
-
-                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 group-focus-within:text-blue-500">
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="-6.5 0 32 32"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path d="M18.813 11.406l-7.906 9.906c-0.75 0.906-1.906 0.906-2.625 0l-7.906-9.906c-0.75-0.938-0.375-1.656 0.781-1.656h16.875c1.188 0 1.531 0.719 0.781 1.656z" />
-                  </svg>
-                </span>
-              </div>
+                </SelectContent>
+              </Select>
             </div>
 
             <button
