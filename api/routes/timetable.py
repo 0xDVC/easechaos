@@ -1,7 +1,6 @@
 import hashlib
 import json
 import logging
-import os
 
 from fastapi import APIRouter
 from pydantic import BaseModel
@@ -23,20 +22,18 @@ class TimeTableRequest(BaseModel):
 
 
 def get_json_table(request: TimeTableRequest):
-    full_path = str(_get_latest_draft())
+    file_path = _get_latest_draft()
+    content = file_path.read_bytes()
 
     table = get_table_from_cache(request.class_pattern, request.is_exam)
 
     if table is None:
-        if not os.path.exists(full_path):
-            raise FileNotFoundError(f"Timetable file not found: {full_path}")
-
         if request.is_exam:
-            table = get_exam_timetable(full_path, request.class_pattern).to_json(
+            table = get_exam_timetable(content, request.class_pattern).to_json(
                 orient="records"
             )
         else:
-            table = get_time_table(full_path, request.class_pattern).to_json(
+            table = get_time_table(content, request.class_pattern).to_json(
                 orient="records"
             )
         assert table is not None
@@ -156,9 +153,7 @@ def get_time_table_endpoint(request: TimeTableRequest):
     Raises:
         FileNotFoundError: If Excel file doesn't exist
     """
-    file_path = str(_get_latest_draft())
-
-    content_hash = hashlib.md5(open(file_path, "rb").read()).hexdigest()
+    content_hash = hashlib.md5(_get_latest_draft().read_bytes()).hexdigest()
 
     # Get processed JSON data
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]

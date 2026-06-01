@@ -74,15 +74,16 @@ class TestGetJsonTable:
 
         xlsx = tmp_path / "draft.xlsx"
         import openpyxl
+
         wb = openpyxl.Workbook()
         ws = wb.active
-        assert(ws is not None)
+        assert ws is not None
         ws.title = "Monday"
         ws.append(["Classroom", "8:00-9:00", "9:00-10:00"])
         ws.append(["CE 4A", "Math 101", None])
         ws.append(["CE 4B", None, "Phy 101"])
         wb.save(xlsx)
-        mock_draft.return_value = str(xlsx)
+        mock_draft.return_value = xlsx
 
         mock_add = mocker.patch("api.routes.timetable.add_table_to_cache")
 
@@ -98,13 +99,14 @@ class TestGetJsonTable:
 
         xlsx = tmp_path / "exam.xlsx"
         import openpyxl
+
         wb = openpyxl.Workbook()
         ws = wb.active
-        assert(ws is not None)
+        assert ws is not None
         ws.append(["DATE", "CLASS", "PERIOD", "COURSE NAME"])
         ws.append(["45000", "CE 4A", "M", "Math 101"])
         wb.save(xlsx)
-        mock_draft.return_value = str(xlsx)
+        mock_draft.return_value = xlsx
 
         mock_add = mocker.patch("api.routes.timetable.add_table_to_cache")
 
@@ -113,11 +115,11 @@ class TestGetJsonTable:
         assert len(result) > 0
         mock_add.assert_called_once()
 
-    def test_raises_file_not_found(self, mocker):
+    def test_raises_file_not_found(self, mocker, tmp_path):
         mock_cache = mocker.patch("api.routes.timetable.get_table_from_cache")
         mock_cache.return_value = None
         mock_draft = mocker.patch("api.routes.timetable._get_latest_draft")
-        mock_draft.return_value = "/nonexistent/path.xlsx"
+        mock_draft.return_value = tmp_path / "nonexistent.xlsx"
 
         with pytest.raises(FileNotFoundError):
             get_json_table(TimeTableRequest(class_pattern="CE 4", is_exam=False))
@@ -126,5 +128,6 @@ class TestGetJsonTable:
 class TestConvertTo24Hour:
     def test_hours_leq_7_become_pm(self):
         from api.extract.extract_lectures_table import convert_to_24hour as c
+
         assert c("7:00") == "19:00"
         assert c("1:00", is_end_time=True) == "13:00"

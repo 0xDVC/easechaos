@@ -12,22 +12,28 @@ from api.extract.extract_exam_table import (
 
 class TestFindHeaderRow:
     def test_finds_header_with_date_and_class(self):
-        df = pd.DataFrame({
-            0: ["junk", "DATE", "data"],
-            1: ["junk", "CLASS", "data"],
-        })
+        df = pd.DataFrame(
+            {
+                0: ["junk", "DATE", "data"],
+                1: ["junk", "CLASS", "data"],
+            }
+        )
         assert _find_header_row(df) == 1
 
     def test_finds_header_with_session_alias(self):
-        df = pd.DataFrame({
-            0: ["junk", "DATE", "data"],
-            1: ["junk", "SESSION", "data"],
-        })
+        df = pd.DataFrame(
+            {
+                0: ["junk", "DATE", "data"],
+                1: ["junk", "SESSION", "data"],
+            }
+        )
         assert _find_header_row(df) == 1
 
     def test_raises_when_header_missing(self):
         df = pd.DataFrame({"A": ["foo", "bar"]})
-        with pytest.raises(ValueError, match="Could not find exam timetable header row"):
+        with pytest.raises(
+            ValueError, match="Could not find exam timetable header row"
+        ):
             _find_header_row(df)
 
 
@@ -79,9 +85,10 @@ class TestConvertExamDates:
 class TestGetExamTimetable:
     def test_returns_filtered_dataframe(self, tmp_path):
         import openpyxl
+
         wb = openpyxl.Workbook()
         ws = wb.active
-        assert(ws is not None)
+        assert ws is not None
         ws.append(["junk", "col"])
         ws.append(["DATE", "CLASS", "PERIOD", "COURSE NAME"])
         ws.append(["45000", "CE 4A", "M", "Math 101"])
@@ -90,7 +97,7 @@ class TestGetExamTimetable:
         path = tmp_path / "exam.xlsx"
         wb.save(path)
 
-        result = get_exam_timetable(str(path), "CE 4")
+        result = get_exam_timetable(path.read_bytes(), "CE 4")
         assert len(result) == 2
         assert all(result["CLASS"].str.startswith("CE 4"))
         assert "START" in result.columns
@@ -99,26 +106,28 @@ class TestGetExamTimetable:
 
     def test_empty_when_no_matching_class(self, tmp_path):
         import openpyxl
+
         wb = openpyxl.Workbook()
         ws = wb.active
-        assert(ws is not None)
+        assert ws is not None
         ws.append(["DATE", "CLASS", "PERIOD", "COURSE NAME"])
         ws.append(["45000", "ME 5A", "M", "Mech 301"])
         path = tmp_path / "exam.xlsx"
         wb.save(path)
 
-        result = get_exam_timetable(str(path), "CE 4")
+        result = get_exam_timetable(path.read_bytes(), "CE 4")
         assert len(result) == 0
 
     def test_drops_no_column(self, tmp_path):
         import openpyxl
+
         wb = openpyxl.Workbook()
         ws = wb.active
-        assert(ws is not None)
+        assert ws is not None
         ws.append(["DATE", "CLASS", "PERIOD", "COURSE NAME", "NO"])
         ws.append(["45000", "CE 4A", "M", "Math 101", "1"])
         path = tmp_path / "exam.xlsx"
         wb.save(path)
 
-        result = get_exam_timetable(str(path), "CE 4")
+        result = get_exam_timetable(path.read_bytes(), "CE 4")
         assert "NO" not in result.columns

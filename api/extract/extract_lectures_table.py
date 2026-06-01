@@ -1,3 +1,4 @@
+import io
 import regex as re
 import pandas as pd
 from icalendar import Event, Calendar
@@ -6,6 +7,7 @@ import openpyxl
 
 
 from collections.abc import Hashable
+
 
 def _get_time_row(df: pd.DataFrame) -> tuple[Hashable, pd.Series] | None:
     """
@@ -22,7 +24,10 @@ def _get_time_row(df: pd.DataFrame) -> tuple[Hashable, pd.Series] | None:
         The time row from the dataframe.
     """
     for row in df.iterrows():
-        if any(re.match(r"^\d{1,2}:\d{1,2}-\d{1,2}:\d{1,2}$", str(cell).strip()) for cell in row[1]):
+        if any(
+            re.match(r"^\d{1,2}:\d{1,2}-\d{1,2}:\d{1,2}$", str(cell).strip())
+            for cell in row[1]
+        ):
             return row
 
 
@@ -47,40 +52,37 @@ def _get_daily_table(df: pd.DataFrame, class_pattern: str) -> pd.DataFrame:
 
     patterns = [
         # basic pattern (e.g "CE 4", "CE 4A")
-        fr"{dept}\s*{year}[A-Z]?",
-
+        rf"{dept}\s*{year}[A-Z]?",
         # multiple sections (e.g "CE 4A, 4B")
-        fr"{dept}\s*{year}[A-Z](\s*,\s*{year}[A-Z])*",
-
+        rf"{dept}\s*{year}[A-Z](\s*,\s*{year}[A-Z])*",
         # department with sections combined (e.g "CE 4A, CE 4B")
-        fr"{dept}\s*{year}[A-Z](\s*,\s*{dept}\s*{year}[A-Z])*",
-
+        rf"{dept}\s*{year}[A-Z](\s*,\s*{dept}\s*{year}[A-Z])*",
         # course numbers starting with the year number (e.g., CE 459, CE/RN 459)
-        fr"{dept}\s*{year}[0-9]{{2}}",
-
+        rf"{dept}\s*{year}[0-9]{{2}}",
         # multiple departments sharing course number starting with year
-        fr"(?:[A-Z]{{2,3}}(?:\s*[,/]\s*)?)*{dept}(?:\s*[,/]\s*[A-Z]{{2,3}})*\s+{year}[0-9]{{2}}",
-
+        rf"(?:[A-Z]{{2,3}}(?:\s*[,/]\s*)?)*{dept}(?:\s*[,/]\s*[A-Z]{{2,3}})*\s+{year}[0-9]{{2}}",
         # department mentioned first in shared course
-        fr"{dept}(?:\s*[,/]\s*[A-Z]{{2,3}})+\s+{year}[0-9]{{2}}"
+        rf"{dept}(?:\s*[,/]\s*[A-Z]{{2,3}})+\s+{year}[0-9]{{2}}",
     ]
 
-    combined_pattern = '|'.join(f'({pattern})' for pattern in patterns)
+    combined_pattern = "|".join(f"({pattern})" for pattern in patterns)
 
-    df = df.mask(~df.map(lambda x: bool(re.search(combined_pattern, str(x), re.IGNORECASE))))
+    df = df.mask(
+        ~df.map(lambda x: bool(re.search(combined_pattern, str(x), re.IGNORECASE)))
+    )
     df = df.dropna(how="all")
 
     return df
 
 
-def _get_all_daily_tables(filename: str, class_pattern: str) -> dict:
+def _get_all_daily_tables(content: bytes, class_pattern: str) -> dict:
     """
     Get all the daily tables from an excel file.
 
     Parameters
     ----------
-    filename : str
-        The filename of the excel file to get the daily tables from.
+    content : bytes
+        Raw bytes of the Excel file.
     class_pattern : str
         The class to get the daily tables or. E.g. 'EL 3'
 
@@ -89,9 +91,7 @@ def _get_all_daily_tables(filename: str, class_pattern: str) -> dict:
     dict
         A dictionary of the daily tables for each class.
     """
-    # filename += ".xlsx"
-
-    workbook = openpyxl.load_workbook(filename)
+    workbook = openpyxl.load_workbook(io.BytesIO(content))
     dfs = {}
     for sheet in workbook.sheetnames:
         merged_cells = workbook[sheet].merged_cells.ranges
@@ -112,14 +112,14 @@ def _get_all_daily_tables(filename: str, class_pattern: str) -> dict:
     return dfs
 
 
-def get_time_table(filename: str, class_pattern: str) -> pd.DataFrame:
+def get_time_table(content: bytes, class_pattern: str) -> pd.DataFrame:
     """
     Get the complete time table for a particular class for all days.
 
     Parameters
     ----------
-    filename : str
-        The filename of the excel file. This file contains every class with the days as the sheet names.
+    content : bytes
+        Raw bytes of the Excel file.
     class_pattern : str
         The class to get the complete time table for. E.g. 'EL 3'
 
@@ -128,7 +128,7 @@ def get_time_table(filename: str, class_pattern: str) -> pd.DataFrame:
     pandas.DataFrame
         The complete time table for the given class.
     """
-    daily_tables = _get_all_daily_tables(filename, class_pattern)
+    daily_tables = _get_all_daily_tables(content, class_pattern)
 
     days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
     for key, value in daily_tables.items():
@@ -162,7 +162,7 @@ def get_time_table(filename: str, class_pattern: str) -> pd.DataFrame:
 
 def convert_to_24hour(time_str, is_end_time=False):
     """Convert time to 24-hour format considering class schedule rules."""
-    hours, minutes = map(int, time_str.split(':'))
+    hours, minutes = map(int, time_str.split(":"))
 
     # For start times: hours <= 11 are AM, hours >= 12 are PM
     # For end times: all times are PM
@@ -198,12 +198,11 @@ def generate_calendar(timetable, start_date, end_date):
     data = timetable
 
     cal = Calendar()
-    cal.add('version', '2.0')
-    cal.add('prodid', '-//Class Schedule Generator//EN')
+    cal.add("version", "2.0")
+    cal.add("prodid", "-//Class Schedule Generator//EN")
 
     start_date = datetime.strptime(start_date, "%Y-%m-%d")
     end_date = datetime.strptime(end_date, "%Y-%m-%d")
-
 
     current_date = start_date
     while current_date <= end_date:
@@ -215,24 +214,24 @@ def generate_calendar(timetable, start_date, end_date):
                         event = Event()
 
                         start_time_24h = convert_to_24hour(class_info["start"])
-                        end_time_24h = convert_to_24hour(class_info["end"], is_end_time=True)
+                        end_time_24h = convert_to_24hour(
+                            class_info["end"], is_end_time=True
+                        )
 
                         start_time = datetime.strptime(start_time_24h, "%H:%M")
                         end_time = datetime.strptime(end_time_24h, "%H:%M")
 
                         event_start = current_date.replace(
-                            hour=start_time.hour,
-                            minute=start_time.minute
+                            hour=start_time.hour, minute=start_time.minute
                         )
                         event_end = current_date.replace(
-                            hour=end_time.hour,
-                            minute=end_time.minute
+                            hour=end_time.hour, minute=end_time.minute
                         )
 
                         event.add("summary", class_info["value"].replace("\n", " "))
                         event.add("dtstart", event_start)
                         event.add("dtend", event_end)
-                        event.add('dtstamp', datetime.now())
+                        event.add("dtstamp", datetime.now())
 
                         cal.add_component(event)
         current_date += timedelta(days=1)

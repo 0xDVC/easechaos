@@ -11,7 +11,7 @@ export const announcements: Announcement[] = [
   {
     id: "second-semester-timetable",
     title: "New Timetable Available",
-    body: "The Second Semester timetable is now live! Select your department and year to view your updated schedule.",
+    body: "Second Semester timetable is now live!",
     variant: "info",
     active: true,
   },

@@ -10,11 +10,13 @@ from api.extract.extract_lectures_table import (
 
 class TestGetTimeRow:
     def test_finds_row_matching_time_pattern(self):
-        df = pd.DataFrame({
-            "A": ["foo", "bar"],
-            "B": ["baz", "7:00-8:00"],
-            "C": ["qux", "9:00-10:00"],
-        })
+        df = pd.DataFrame(
+            {
+                "A": ["foo", "bar"],
+                "B": ["baz", "7:00-8:00"],
+                "C": ["qux", "9:00-10:00"],
+            }
+        )
         result = _get_time_row(df)
         assert result is not None
         _, series = result
@@ -89,9 +91,10 @@ class TestConvertTo24Hour:
 class TestGetTimeTable:
     def test_returns_dataframe(self, tmp_path):
         import openpyxl
+
         wb = openpyxl.Workbook()
         ws = wb.active
-        assert(ws is not None)
+        assert ws is not None
         ws.title = "Monday"
         ws.append(["Classroom", "8:00-9:00", "9:00-10:00"])
         ws.append(["CE 4A", "Math 101", "Phy 101"])
@@ -99,19 +102,20 @@ class TestGetTimeTable:
         path = tmp_path / "test.xlsx"
         wb.save(path)
 
-        result = get_time_table(str(path), "CE 4")
+        result = get_time_table(path.read_bytes(), "CE 4")
         assert not result.empty
         assert "Monday" in result.index
 
     def test_raises_on_no_valid_sheet(self, tmp_path):
         import openpyxl
+
         wb = openpyxl.Workbook()
         ws = wb.active
-        assert(ws is not None)
+        assert ws is not None
         ws.title = "NotADay"
         ws.append(["foo", "bar"])
         path = tmp_path / "bad.xlsx"
         wb.save(path)
 
         with pytest.raises(ValueError, match="No sheet found"):
-            get_time_table(str(path), "CE 4")
+            get_time_table(path.read_bytes(), "CE 4")

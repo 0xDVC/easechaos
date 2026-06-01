@@ -10,8 +10,19 @@ client = TestClient(app)
 
 
 @pytest.fixture
-def mock_get_latest_draft(mocker):
-    return mocker.patch("api.routes.timetable._get_latest_draft", return_value="api/drafts/Draft_3.xlsx")
+def mock_get_latest_draft(mocker, tmp_path):
+    import openpyxl
+
+    xlsx = tmp_path / "draft.xlsx"
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    assert ws is not None
+    ws.title = "Monday"
+    ws.append(["Classroom", "8:00-9:00", "9:00-10:00"])
+    ws.append(["ignore", "8:00-9:00", "9:00-10:00"])
+    ws.append(["Room 1", "COMP 2A - Math", "COMP 2A - Phy"])
+    wb.save(xlsx)
+    return mocker.patch("api.routes.timetable._get_latest_draft", return_value=xlsx)
 
 
 @pytest.fixture
@@ -35,7 +46,10 @@ def mock_get_exam_timetable(mocker):
 
 
 def test_get_lecture_time_table_endpoint(
-    mock_get_latest_draft, mock_get_table_from_cache, mock_add_table_to_cache, mock_get_time_table
+    mock_get_latest_draft,
+    mock_get_table_from_cache,
+    mock_add_table_to_cache,
+    mock_get_time_table,
 ):
     request = TimeTableRequest(class_pattern="MECH 3", is_exam=False)
     mock_get_table_from_cache.return_value = None
@@ -57,13 +71,14 @@ def test_get_lecture_time_table_endpoint(
 
 
 def test_get_exam_time_table_endpoint(
-    mock_get_latest_draft, mock_get_table_from_cache, mock_add_table_to_cache, mock_get_exam_timetable
+    mock_get_latest_draft,
+    mock_get_table_from_cache,
+    mock_add_table_to_cache,
+    mock_get_exam_timetable,
 ):
     request = TimeTableRequest(class_pattern="CE 4", is_exam=True)
     mock_get_table_from_cache.return_value = None
-    mock_get_exam_timetable.return_value.to_json.return_value = (
-        '[{"DATE": "2024-01-15", "START": "11:00 AM", "END": "2:00 PM", "COURSE NAME": "MATH 301", "CLASS": "CE 4", "LECTURE HALL": "Room A", "INVIGILATOR (UPDATED)": "Dr. Smith"}]'
-    )
+    mock_get_exam_timetable.return_value.to_json.return_value = '[{"DATE": "2024-01-15", "START": "11:00 AM", "END": "2:00 PM", "COURSE NAME": "MATH 301", "CLASS": "CE 4", "LECTURE HALL": "Room A", "INVIGILATOR (UPDATED)": "Dr. Smith"}]'
 
     response = client.post("/get_time_table", json=request.model_dump())
 
@@ -78,7 +93,9 @@ def test_get_exam_time_table_endpoint(
     )
 
 
-def test_get_time_table_cache_hit(mock_get_latest_draft, mock_get_table_from_cache, mock_add_table_to_cache):
+def test_get_time_table_cache_hit(
+    mock_get_latest_draft, mock_get_table_from_cache, mock_add_table_to_cache
+):
     request = TimeTableRequest(class_pattern="EL 3", is_exam=False)
     mock_get_table_from_cache.return_value = '[{"day": "Monday", "data": []}]'
 
@@ -90,7 +107,9 @@ def test_get_time_table_cache_hit(mock_get_latest_draft, mock_get_table_from_cac
     mock_add_table_to_cache.assert_not_called()
 
 
-def test_get_time_table_file_not_found(mock_get_latest_draft, mock_get_table_from_cache):
+def test_get_time_table_file_not_found(
+    mock_get_latest_draft, mock_get_table_from_cache
+):
     request = TimeTableRequest(class_pattern="COMP 2", is_exam=False)
     mock_get_table_from_cache.return_value = None
 

@@ -1,3 +1,4 @@
+import io
 import pandas as pd
 
 PERIOD_MAPPING = {
@@ -48,25 +49,26 @@ def _normalize_columns(df: pd.DataFrame) -> pd.DataFrame:
 def _convert_exam_dates(date_series: pd.Series) -> pd.Series:
     """Normalize Excel serial dates and datetime-like values."""
     numeric_dates = pd.to_numeric(date_series, errors="coerce")
+    numeric_series = pd.Series(numeric_dates)
 
-    if numeric_dates.notna().all():
-        return pd.to_datetime(numeric_dates, unit="D", origin="1899-12-30")
+    if numeric_series.notna().all():
+        return pd.to_datetime(numeric_series, unit="D", origin="1899-12-30")
 
     return pd.to_datetime(date_series, errors="coerce")
 
 
-def get_exam_timetable(filename, class_pattern) -> pd.DataFrame:
+def get_exam_timetable(content: bytes, class_pattern: str) -> pd.DataFrame:
     """
     Process an examination timetable Excel file and return a filtered DataFrame.
 
     Parameters:
-    filename (str): Path to the Excel file
+    content (bytes): Raw bytes of the Excel file
     class_pattern (str): Pattern to filter classes (e.g., 'CE 4')
 
     Returns:
     pd.DataFrame: Processed and filtered timetable DataFrame
     """
-    raw_df = pd.read_excel(filename, sheet_name=0, header=None)
+    raw_df = pd.read_excel(io.BytesIO(content), sheet_name=0, header=None)
 
     header_row = _find_header_row(raw_df)
     df = raw_df.iloc[header_row:].reset_index(drop=True)
@@ -80,14 +82,15 @@ def get_exam_timetable(filename, class_pattern) -> pd.DataFrame:
         raise ValueError("Exam timetable is missing PERIOD/SESSION column")
 
     df[period_col] = df[period_col].astype(str).str.strip()
-    df = df[df[period_col].isin(PERIOD_MAPPING.keys())]
+    df = df[df[period_col].isin(list(PERIOD_MAPPING))]
 
     if df.empty:
         # No valid PERIOD/SESSION rows; propagate an empty result without raising.
         df["START"] = pd.Series(dtype=object)
         df["END"] = pd.Series(dtype=object)
     else:
-        df["START"], df["END"] = zip(*df[period_col].map(PERIOD_MAPPING))
+        period_col_vals = pd.Series(df[period_col])
+        df["START"], df["END"] = zip(*period_col_vals.map(PERIOD_MAPPING))
     df = df.drop(columns=[period_col])
 
     def format_date_with_suffix(date):
@@ -97,11 +100,15 @@ def get_exam_timetable(filename, class_pattern) -> pd.DataFrame:
         )
         return date.strftime(f"%A, {day}{suffix} %B %Y")
 
-    df["DATE"] = _convert_exam_dates(df["DATE"])
-    df = df[df["DATE"].notna()].copy()
-    df["DATE"] = df["DATE"].apply(format_date_with_suffix)
+    df["DATE"] = _convert_exam_dates(pd.Series(df["DATE"]))
+    date_valid = pd.Series(df["DATE"]).notna()
+    df = df[date_valid].copy()
+    df["DATE"] = pd.Series(df["DATE"]).apply(format_date_with_suffix)
 
-    filtered_df = df[df["CLASS"].astype(str).str.startswith(class_pattern)].copy()
+    class_series = pd.Series(df["CLASS"])
+    filtered_df: pd.DataFrame = df[
+        class_series.astype(str).str.startswith(class_pattern)
+    ].copy()  # pyright: ignore[reportAssignmentType]
 
     if "NO" in filtered_df.columns:
         filtered_df = filtered_df.drop(columns=["NO"])
