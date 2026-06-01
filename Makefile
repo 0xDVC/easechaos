@@ -4,11 +4,11 @@ DOCKER_COMPOSE_FILE=docker-compose.dev.yml
 VOLUMES=easechaos_redis-data
 
 install:
-	pip install -r requirements.txt
+	uv pip install -r requirements.txt
 	cd frontend && pnpm install
 
 run-backend:
-	python3 -m uvicorn api.api:app --reload --port 3000
+	uv run uvicorn api.api:app --reload --port 3300
 
 run-frontend:
 	cd frontend && pnpm run dev
@@ -32,7 +32,7 @@ clean:
 	docker volume rm $(VOLUMES)
 
 test:
-	pytest tests/ -v
+	uv run pytest api/test/ -v
 
 lint:
 	flake8 .
