@@ -5,6 +5,8 @@ import logging
 from pathlib import Path
 import hashlib
 
+from api.config.sqlite_store import init_db, get_timetable, save_timetable
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
@@ -23,6 +25,7 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+init_db()
 
 
 def _get_latest_draft(is_exam: bool = False) -> Path:
@@ -34,8 +37,8 @@ def _get_latest_draft(is_exam: bool = False) -> Path:
     return max(files, key=lambda f: f.stat().st_mtime)
 
 
-def _current_file_hash() -> str:
-    return hashlib.md5(_get_latest_draft().read_bytes()).hexdigest()
+def _current_file_hash(is_exam: bool = False) -> str:
+    return hashlib.md5(_get_latest_draft(is_exam).read_bytes()).hexdigest()
 
 
 def get_redis_connection():
@@ -68,7 +71,7 @@ def create_cache_key_from_parameters(class_pattern: str, is_exam: bool) -> str:
 
 def get_table_from_cache(class_pattern: str, is_exam: bool) -> str | None:
     try:
-        current_hash = _current_file_hash()
+        current_hash = _current_file_hash(is_exam)
 
         cache_key = create_cache_key_from_parameters(class_pattern, is_exam)
         hash_key = f"{cache_key}_hash"
@@ -82,6 +85,18 @@ def get_table_from_cache(class_pattern: str, is_exam: bool) -> str | None:
             and cached_hash == current_hash
         ):
             return cached_data
+
+        stored = get_timetable(cache_key, current_hash)
+        if stored is not None:
+            try:
+                pipe = r.pipeline()
+                pipe.setex(cache_key, 3600, stored)
+                pipe.setex(hash_key, 3600, current_hash)
+                pipe.execute()
+            except redis.RedisError:
+                pass
+            return stored
+
         return None
 
     except redis.RedisError as e:
@@ -96,7 +111,7 @@ def add_table_to_cache(
     table: str, class_pattern: str, is_exam: bool, expire_seconds: int = 3600
 ):
     try:
-        current_hash = _current_file_hash()
+        current_hash = _current_file_hash(is_exam)
 
         cache_key = create_cache_key_from_parameters(class_pattern, is_exam)
         hash_key = f"{cache_key}_hash"
@@ -105,6 +120,8 @@ def add_table_to_cache(
         pipe.setex(cache_key, expire_seconds, table)
         pipe.setex(hash_key, expire_seconds, current_hash)
         pipe.execute()
+
+        save_timetable(cache_key, current_hash, table)
 
     except redis.RedisError as e:
         logger.error(f"Error adding to cache: {e}")
