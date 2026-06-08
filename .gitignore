@@ -175,4 +175,5 @@ extract/tests
 myenv/
 *.ics
 
-docs/student-adoption-marketing.mdapi/data/
+docs/student-adoption-marketing.md
+api/data/

@@ -32,7 +32,7 @@ The application currently features:
 ### Prerequisites
 - Node.js 18+
 - Python 3.9+
-- Redis
+- Redis (fallback to SQLite if unavailable)
 - Docker (Optional, although preferred for local developement)
 
 ## Tech Stack
@@ -45,7 +45,7 @@ The application currently features:
 
 ### Backend
 - FastAPI (Python)
-- Redis
+- Redis / SQLite (caching & persistence)
 - Docker
 
 ## Documentation

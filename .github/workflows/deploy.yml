@@ -6,6 +6,9 @@ on:
     branches:
       - dev
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 jobs:
   deploy:

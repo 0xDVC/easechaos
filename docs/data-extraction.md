@@ -187,7 +187,7 @@ period_mapping = {
 ## Performance Considerations
 
 ### Optimization Strategies
-1. **Caching**: Redis caching for processed timetables
+1. **Caching**: Redis caching for processed timetables, with SQLite as persistent fallback
 2. **Lazy Loading**: Process sheets only when needed
 3. **Memory Management**: Clean up intermediate DataFrames
 4. **File Hash**: Detect file changes for cache invalidation
@@ -221,7 +221,7 @@ period_mapping = {
 1. API receives timetable request with filename and class pattern
 2. Extraction function processes Excel file
 3. Data converted to JSON format
-4. Response cached in Redis for future requests
+4. Response cached in Redis (with SQLite as persistent fallback that survives restarts)
 5. Formatted data returned to frontend
 
 ### Response Format
